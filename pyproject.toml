@@ -24,8 +24,8 @@ classifiers = [
 dependencies = ["python-docx>=1.1.0"]
 
 [project.urls]
-Homepage = "https://github.com/OWNER/ghas-assess"
-Issues = "https://github.com/OWNER/ghas-assess/issues"
+Homepage = "https://github.com/COVID-cmd/ghas-assess"
+Issues = "https://github.com/COVID-cmd/ghas-assess/issues"
 
 [project.scripts]
 ghas-assess = "ghas_assess.__main__:main"

@@ -13,3 +13,4 @@ venv/
 !sample*.json
 !sample*.html
 !sample*.docx
+.DS_Store
