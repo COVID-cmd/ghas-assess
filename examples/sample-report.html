@@ -1,0 +1,699 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>GHAS Security Assessment - acme-corp (demo)</title>
+<style>
+ body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0b1a26;color:#e8ecf1;margin:0;padding:0;line-height:1.45}
+ .wrap{padding:28px 32px}
+ h1{color:#02fff0;margin:0 0 4px} h2{color:#b997ff;margin:26px 0 8px;border-bottom:1px solid #16344c;padding-bottom:4px}
+ h3{color:#9fe0ff;margin:20px 0 8px;font-size:15px}
+ .cntr{font-size:13px;color:#9fb3c4;font-weight:400}
+ .sub{color:#9fb3c4;margin-bottom:12px}
+ .tabs{display:flex;gap:6px;background:#0e2333;padding:10px 32px 0;position:sticky;top:0;z-index:5;border-bottom:1px solid #16344c}
+ .tab{padding:10px 20px;cursor:pointer;border-radius:8px 8px 0 0;color:#9fb3c4;font-weight:600}
+ .tab.active{background:#0b1a26;color:#02fff0}
+ .panel{display:none} .panel.active{display:block}
+ .cards{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 16px}
+ .herorow{display:flex;gap:20px;flex-wrap:wrap;align-items:stretch;margin:12px 0 18px}
+ .hero{background:#0e2333;border-radius:16px;padding:20px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:220px}
+ .heroband{font-size:15px;font-weight:700;margin-top:6px;letter-spacing:.3px}
+ .herostats{flex:1;min-width:320px;display:flex;flex-direction:column;justify-content:center}
+ .statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+ .stat{background:#0e2333;border-radius:12px;padding:14px 16px;text-align:center;border-top:3px solid #16344c}
+ .stat.statbad{border-top-color:#e74c3c} .stat.statgood{border-top-color:#2ecc71} .stat.statwin{border-top-color:#02fff0}
+ .legend{display:flex;gap:16px;margin:0 0 10px;font-size:12px;color:#9fb3c4}
+ .legend i.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+ .planhint{color:#9fb3c4;font-size:12.5px;margin:0 0 12px}
+ .plan td{vertical-align:middle}
+ .sevdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+ .pfind{font-weight:600;color:#e8ecf1} .pfid{font-size:11px;color:#5e7a90;font-family:ui-monospace,monospace}
+ .affbar{width:100px;height:8px;background:#081826;border-radius:4px;overflow:hidden;margin-bottom:3px}
+ .afffill{height:100%;border-radius:4px} .affn{font-size:11px;color:#9fb3c4}
+ .tag{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:700;white-space:nowrap}
+ .tagwin{background:#02fff01a;color:#02fff0} .tagrepo{background:#9fb3c41a;color:#9fb3c4}
+ .snum{font-size:30px;font-weight:800;line-height:1} .slab{color:#9fb3c4;font-size:11.5px;margin-top:5px}
+ .chips{margin:14px 0 4px} .chip{display:inline-block;color:#fff;padding:5px 12px;border-radius:14px;margin-right:8px;font-size:13px;font-weight:700}
+ .dashgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:16px}
+ .panelbox{background:#0e2333;border-radius:16px;padding:16px 20px}
+ .panelbox h3{margin:2px 0 12px} .hint{font-size:12px;color:#5e7a90;font-weight:400}
+ .radar{display:flex;justify-content:center}
+ .catbar{display:flex;align-items:center;gap:12px;margin:11px 0}
+ .catname{width:140px;font-size:13px;color:#cfe0ee}
+ .bartrack{flex:1;height:14px;background:#081826;border-radius:7px;overflow:hidden}
+ .barfill{height:100%;border-radius:7px;transition:width .3s}
+ .catval{width:28px;text-align:right;font-size:14px;color:#e8ecf1;font-weight:700}
+ .scorepill{padding:3px 12px;border-radius:12px;font-weight:800;font-size:14px}
+ .afx{background:#e74c3c22;color:#e74c3c;padding:2px 9px;border-radius:10px;font-weight:700;font-size:12px}
+ .panelbox table{margin-bottom:0;background:transparent}
+ .panelbox th{background:#0b2033}
+ table{border-collapse:collapse;width:100%;background:#0e2333;border-radius:10px;overflow:hidden;margin-bottom:8px}
+ th{background:#12304a;text-align:left;padding:9px 12px;font-size:12.5px;color:#cfe0ee}
+ td{padding:9px 12px;border-top:1px solid #16344c;font-size:13px;vertical-align:top}
+ .fid{font-weight:700;color:#02fff0} .scope{color:#9fb3c4;font-family:ui-monospace,monospace;font-size:11.5px}
+ .badge{color:#fff;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+ .tt{font-weight:700;margin-bottom:3px}
+ .now{margin:2px 0} .bp{color:#9fe0c4;margin:2px 0} .why{color:#c9b8ff;margin:2px 0}
+ .ev{color:#9fb3c4;margin:3px 0} .ev code{background:#0b1a26;padding:1px 5px;border-radius:4px;font-size:11.5px}
+ .imp{color:#ffd479;margin-top:4px}
+ .catrow{background:#0b2436;color:#b997ff;font-weight:700;font-size:12px}
+ .legendbox{background:#0e2333;border-radius:16px;padding:16px 20px;margin-bottom:18px}
+ .legendbox h3{margin:2px 0 12px}
+ .lgrow{display:flex;align-items:flex-start;gap:12px;margin:8px 0}
+ .lgrow .badge{min-width:64px;text-align:center;flex-shrink:0}
+ .lgtext{font-size:13px;color:#cfe0ee}
+ .lgsev{margin-top:12px;padding-top:12px;border-top:1px solid #16344c;font-size:13px;color:#cfe0ee}
+ .foot{color:#5e7a90;margin-top:22px;font-size:12px}
+</style></head><body>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('dash')">Dashboard</div>
+  <div class="tab" onclick="showTab('detail')">Detailed findings</div>
+</div>
+<div class="wrap">
+<h1>GitHub Advanced Security - Assessment</h1>
+<div class="sub">Organisation <b>acme-corp (demo)</b> &middot; 3 repositories &middot; 15 gaps of 34 checks &middot; generated 2026-07-22 20:58 UTC</div>
+<div id="dash" class="panel active">
+    <div class="herorow">
+      <div class="hero">
+        <div class="gauge"><svg viewBox="0 0 200 200" width="200" height="200" xmlns="http://www.w3.org/2000/svg"><circle cx="100.0" cy="100.0" r="80.0" fill="none" stroke="#16344c" stroke-width="14"/><circle cx="100.0" cy="100.0" r="80.0" fill="none" stroke="#f39c12" stroke-width="14" stroke-linecap="round" stroke-dasharray="316.7 186.0" transform="rotate(-90 100.0 100.0)"/><text x="100.0" y="96.0" fill="#f39c12" font-size="46" font-weight="800" text-anchor="middle" font-family="sans-serif">63</text><text x="100.0" y="122.0" fill="#9fb3c4" font-size="13" text-anchor="middle" font-family="sans-serif">posture score</text></svg></div>
+        <div class="heroband" style="color:#f39c12">Needs work</div>
+      </div>
+      <div class="herostats">
+        <div class="statgrid">
+          <div class="stat"><div class="snum" style="color:#5dd6ff">3</div><div class="slab">Repositories</div></div>
+          <div class="stat"><div class="snum" style="color:#5dd6ff">34</div><div class="slab">Checks run</div></div>
+          <div class="stat statbad"><div class="snum" style="color:#e74c3c">15</div><div class="slab">Gaps found</div></div>
+          <div class="stat"><div class="snum" style="color:#e74c3c">7</div><div class="slab">High severity</div></div>
+          <div class="stat statgood"><div class="snum" style="color:#2ecc71">13</div><div class="slab">Configured OK</div></div>
+          <div class="stat statwin"><div class="snum" style="color:#02fff0">3</div><div class="slab">Org-wide quick wins</div></div>
+        </div>
+        <div class="chips"><span class="chip" style="background:#C0392B">High: 7</span><span class="chip" style="background:#BF8F00">Medium: 6</span><span class="chip" style="background:#2E7D32">Low: 2</span></div>
+      </div>
+    </div>
+    <div class="dashgrid">
+      <div class="panelbox">
+        <h3>Gap severity by category</h3>
+        <div class="legend"><span><i class="sw" style="background:#e74c3c"></i>High</span><span><i class="sw" style="background:#f39c12"></i>Medium</span><span><i class="sw" style="background:#2ecc71"></i>Low</span></div>
+        <svg viewBox="0 0 560 260" width="100%" height="260" xmlns="http://www.w3.org/2000/svg"><text x="130" y="27.0" fill="#cfe0ee" font-size="12" text-anchor="end" font-family="sans-serif">Secret Protection</text><rect x="138.0" y="10" width="191.0" height="26" fill="#e74c3c" rx="3"/><text x="233.5" y="27.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">2</text><rect x="331.0" y="10" width="191.0" height="26" fill="#f39c12" rx="3"/><text x="426.5" y="27.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">2</text><text x="528" y="27.0" fill="#9fb3c4" font-size="12" font-family="sans-serif">4</text><text x="130" y="67.0" fill="#cfe0ee" font-size="12" text-anchor="end" font-family="sans-serif">Code Scanning</text><rect x="138.0" y="50" width="95.5" height="26" fill="#e74c3c" rx="3"/><text x="185.8" y="67.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><rect x="235.5" y="50" width="95.5" height="26" fill="#f39c12" rx="3"/><text x="283.2" y="67.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><text x="528" y="67.0" fill="#9fb3c4" font-size="12" font-family="sans-serif">2</text><text x="130" y="107.0" fill="#cfe0ee" font-size="12" text-anchor="end" font-family="sans-serif">Dependencies</text><rect x="138.0" y="90" width="95.5" height="26" fill="#f39c12" rx="3"/><text x="185.8" y="107.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><text x="528" y="107.0" fill="#9fb3c4" font-size="12" font-family="sans-serif">1</text><text x="130" y="147.0" fill="#cfe0ee" font-size="12" text-anchor="end" font-family="sans-serif">Enforcement</text><rect x="138.0" y="130" width="95.5" height="26" fill="#e74c3c" rx="3"/><text x="185.8" y="147.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><rect x="235.5" y="130" width="95.5" height="26" fill="#f39c12" rx="3"/><text x="283.2" y="147.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><text x="528" y="147.0" fill="#9fb3c4" font-size="12" font-family="sans-serif">2</text><text x="130" y="187.0" fill="#cfe0ee" font-size="12" text-anchor="end" font-family="sans-serif">Governance</text><rect x="138.0" y="170" width="95.5" height="26" fill="#e74c3c" rx="3"/><text x="185.8" y="187.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><rect x="235.5" y="170" width="95.5" height="26" fill="#f39c12" rx="3"/><text x="283.2" y="187.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><rect x="333.0" y="170" width="95.5" height="26" fill="#2ecc71" rx="3"/><text x="380.8" y="187.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><text x="528" y="187.0" fill="#9fb3c4" font-size="12" font-family="sans-serif">3</text><text x="130" y="227.0" fill="#cfe0ee" font-size="12" text-anchor="end" font-family="sans-serif">Organisation</text><rect x="138.0" y="210" width="191.0" height="26" fill="#e74c3c" rx="3"/><text x="233.5" y="227.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">2</text><rect x="331.0" y="210" width="95.5" height="26" fill="#2ecc71" rx="3"/><text x="378.8" y="227.0" fill="#0b1a26" font-size="11" font-weight="700" text-anchor="middle" font-family="sans-serif">1</text><text x="528" y="227.0" fill="#9fb3c4" font-size="12" font-family="sans-serif">3</text></svg>
+      </div>
+      <div class="panelbox">
+        <h3>Where gaps concentrate</h3>
+        <div class="radar"><svg viewBox="0 0 420 420" width="420" height="420" xmlns="http://www.w3.org/2000/svg"><polygon points="210.0,176.4 239.1,193.2 239.1,226.8 210.0,243.6 180.9,226.8 180.9,193.2" fill="none" stroke="#1c3a52" stroke-width="1"/><polygon points="210.0,142.8 268.2,176.4 268.2,243.6 210.0,277.2 151.8,243.6 151.8,176.4" fill="none" stroke="#1c3a52" stroke-width="1"/><polygon points="210.0,109.2 297.3,159.6 297.3,260.4 210.0,310.8 122.7,260.4 122.7,159.6" fill="none" stroke="#1c3a52" stroke-width="1"/><polygon points="210.0,75.6 326.4,142.8 326.4,277.2 210.0,344.4 93.6,277.2 93.6,142.8" fill="none" stroke="#1c3a52" stroke-width="1"/><line x1="210.0" y1="210.0" x2="210.0" y2="75.6" stroke="#1c3a52" stroke-width="1"/><line x1="210.0" y1="210.0" x2="326.4" y2="142.8" stroke="#1c3a52" stroke-width="1"/><line x1="210.0" y1="210.0" x2="326.4" y2="277.2" stroke="#1c3a52" stroke-width="1"/><line x1="210.0" y1="210.0" x2="210.0" y2="344.4" stroke="#1c3a52" stroke-width="1"/><line x1="210.0" y1="210.0" x2="93.6" y2="277.2" stroke="#1c3a52" stroke-width="1"/><line x1="210.0" y1="210.0" x2="93.6" y2="142.8" stroke="#1c3a52" stroke-width="1"/><polygon points="210.0,75.6 268.2,176.4 239.1,226.8 210.0,277.2 122.7,260.4 122.7,159.6" fill="rgba(192,57,43,0.35)" stroke="#e74c3c" stroke-width="2"/><circle cx="210.0" cy="75.6" r="3" fill="#e74c3c"/><circle cx="268.2" cy="176.4" r="3" fill="#e74c3c"/><circle cx="239.1" cy="226.8" r="3" fill="#e74c3c"/><circle cx="210.0" cy="277.2" r="3" fill="#e74c3c"/><circle cx="122.7" cy="260.4" r="3" fill="#e74c3c"/><circle cx="122.7" cy="159.6" r="3" fill="#e74c3c"/><text x="210.0" y="49.6" fill="#cfe0ee" font-size="11" text-anchor="middle" dominant-baseline="middle">Secret Protection (4)</text><text x="348.9" y="129.8" fill="#cfe0ee" font-size="11" text-anchor="start" dominant-baseline="middle">Code Scanning (2)</text><text x="348.9" y="290.2" fill="#cfe0ee" font-size="11" text-anchor="start" dominant-baseline="middle">Dependencies (1)</text><text x="210.0" y="370.4" fill="#cfe0ee" font-size="11" text-anchor="middle" dominant-baseline="middle">Enforcement (2)</text><text x="71.1" y="290.2" fill="#cfe0ee" font-size="11" text-anchor="end" dominant-baseline="middle">Governance (3)</text><text x="71.1" y="129.8" fill="#cfe0ee" font-size="11" text-anchor="end" dominant-baseline="middle">Organisation (3)</text><text x="210.0" y="16" fill="#02fff0" font-size="13" text-anchor="middle" font-weight="700">Gaps by category</text></svg></div>
+      </div>
+    </div>
+    <div class="panelbox">
+      <h3>Priority remediation plan <span class="hint">severity first, then blast radius</span></h3>
+      <p class="planhint">Start at the top. <b style="color:#02fff0">Org-wide fixes</b> clear the gap across every affected repository in a single change &mdash; the fastest way to raise the score.</p>
+      <table class="plan"><thead><tr><th>Severity</th><th>Finding</th><th>Estate impact</th><th>Fix type</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="sevdot" style="background:#C0392B"></span><span style="color:#C0392B;font-weight:600">High</span></td>
+          <td><div class="pfind">Security configuration coverage</div><div class="pfid">ORG-CONFIG-COVERAGE</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:100%;background:#C0392B"></div></div>
+              <div class="affn">3/3 repos</div></td>
+          <td><span class="tag tagwin">org-wide fix</span></td>
+          <td>Attach the org security configuration to every active repo; set as default.</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#C0392B"></span><span style="color:#C0392B;font-weight:600">High</span></td>
+          <td><div class="pfind">Push protection enabled</div><div class="pfid">SECRET-PUSH-PROTECTION</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:33%;background:#C0392B"></div></div>
+              <div class="affn">1/3 repos</div></td>
+          <td><span class="tag tagrepo">per-repo</span></td>
+          <td>Enable push protection (ideally enforced via the org security configuration so it cannot be turned off per repo).</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#C0392B"></span><span style="color:#C0392B;font-weight:600">High</span></td>
+          <td><div class="pfind">No unresolved critical/high alerts</div><div class="pfid">GOV-NO-OPEN-CRITICALS</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:33%;background:#C0392B"></div></div>
+              <div class="affn">1/3 repos</div></td>
+          <td><span class="tag tagrepo">per-repo</span></td>
+          <td>Remediate or formally risk-accept every critical/high, starting with the most concentrated repositories.</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#C0392B"></span><span style="color:#C0392B;font-weight:600">High</span></td>
+          <td><div class="pfind">Code scanning required to merge</div><div class="pfid">CODE-REQUIRED-CHECK</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:33%;background:#C0392B"></div></div>
+              <div class="affn">1/3 repos</div></td>
+          <td><span class="tag tagrepo">per-repo</span></td>
+          <td>Create a ruleset requiring the code-scanning check on protected branches.</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#C0392B"></span><span style="color:#C0392B;font-weight:600">High</span></td>
+          <td><div class="pfind">Two-factor authentication required</div><div class="pfid">ORG-2FA-REQUIRED</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:100%;background:#C0392B"></div></div>
+              <div class="affn">3/3 repos</div></td>
+          <td><span class="tag tagwin">org-wide fix</span></td>
+          <td>Require two-factor authentication in organisation security settings.</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#C0392B"></span><span style="color:#C0392B;font-weight:600">High</span></td>
+          <td><div class="pfind">Default branch requires pull requests</div><div class="pfid">ENF-PR-REQUIRED</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:33%;background:#C0392B"></div></div>
+              <div class="affn">1/3 repos</div></td>
+          <td><span class="tag tagrepo">per-repo</span></td>
+          <td>Require pull requests (and block direct pushes) via a ruleset or branch protection.</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#C0392B"></span><span style="color:#C0392B;font-weight:600">High</span></td>
+          <td><div class="pfind">Push protection not bypassed</div><div class="pfid">SECRET-PUSH-BYPASS</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:33%;background:#C0392B"></div></div>
+              <div class="affn">1/3 repos</div></td>
+          <td><span class="tag tagrepo">per-repo</span></td>
+          <td>Review every bypass; rotate any exposed secret; require justification for bypasses.</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#BF8F00"></span><span style="color:#BF8F00;font-weight:600">Medium</span></td>
+          <td><div class="pfind">Custom secret patterns defined</div><div class="pfid">SECRET-CUSTOM-PATTERNS</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:100%;background:#BF8F00"></div></div>
+              <div class="affn">3/3 repos</div></td>
+          <td><span class="tag tagwin">org-wide fix</span></td>
+          <td>Define custom patterns (dry-run first, then enforce) for your internal formats.</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#BF8F00"></span><span style="color:#BF8F00;font-weight:600">Medium</span></td>
+          <td><div class="pfind">AI-detected secrets enabled</div><div class="pfid">SECRET-AI-DETECTION</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:33%;background:#BF8F00"></div></div>
+              <div class="affn">1/3 repos</div></td>
+          <td><span class="tag tagrepo">per-repo</span></td>
+          <td>Enable AI-detected secrets; measure detection quality on a pilot repo first.</td>
+        </tr>
+        <tr>
+          <td><span class="sevdot" style="background:#BF8F00"></span><span style="color:#BF8F00;font-weight:600">Medium</span></td>
+          <td><div class="pfind">Dependabot update management</div><div class="pfid">DEP-UPDATE-CONFIG</div></td>
+          <td><div class="affbar"><div class="afffill" style="width:33%;background:#BF8F00"></div></div>
+              <div class="affn">1/3 repos</div></td>
+          <td><span class="tag tagrepo">per-repo</span></td>
+          <td>Add a dependabot.yml defining ecosystems, schedule, grouping and PR limits.</td>
+        </tr></tbody></table>
+    </div>
+    <div class="panelbox">
+      <h3>Repositories ranked by posture <span class="hint">worst first</span></h3>
+      <table><thead><tr><th>Repository</th><th>Score</th><th>High</th><th>Medium</th><th>Low</th><th>OK</th></tr></thead>
+      <tbody><tr>
+          <td class="scope">payments-service</td>
+          <td><span class="scorepill" style="background:#e74c3c1a;color:#e74c3c">10</span></td>
+          <td style="color:#e74c3c;font-weight:500">4</td>
+          <td style="color:#f39c12;font-weight:500">4</td>
+          <td style="color:#2ecc71;font-weight:500">2</td>
+          <td style="color:#2ecc71">4</td>
+        </tr><tr>
+          <td class="scope">web-frontend</td>
+          <td><span class="scorepill" style="background:#f39c121a;color:#f39c12">79</span></td>
+          <td style="color:#e74c3c;font-weight:500">1</td>
+          <td style="color:#f39c12;font-weight:500">1</td>
+          <td style="color:#2ecc71;font-weight:500">0</td>
+          <td style="color:#2ecc71">5</td>
+        </tr><tr>
+          <td class="scope">iac-sandbox</td>
+          <td><span class="scorepill" style="background:#2ecc711a;color:#2ecc71">100</span></td>
+          <td style="color:#e74c3c;font-weight:500">0</td>
+          <td style="color:#f39c12;font-weight:500">0</td>
+          <td style="color:#2ecc71;font-weight:500">0</td>
+          <td style="color:#2ecc71">4</td>
+        </tr></tbody></table>
+    </div>
+    </div>
+<div id="detail" class="panel">
+    <div class="legendbox">
+      <h3>How to read this report</h3>
+      <div class="lgrow"><span class="badge" style="background:#c0392b">GAP</span><span class="lgtext">Something is misconfigured and needs fixing. These are the findings.</span></div><div class="lgrow"><span class="badge" style="background:#2e7d32">OK</span><span class="lgtext">Checked and correctly configured. A win — no action needed.</span></div><div class="lgrow"><span class="badge" style="background:#7d5ba6">MANUAL</span><span class="lgtext">The GitHub API cannot read this setting; verify it yourself in the UI (or supply a manual-answers file).</span></div><div class="lgrow"><span class="badge" style="background:#456">INFO</span><span class="lgtext">No problem, just context worth knowing (e.g. open alerts that aren&#x27;t critical). Not an action item.</span></div><div class="lgsev"><b>Severity</b> (on gaps): <span style="color:#e74c3c">High</span> · <span style="color:#f39c12">Medium</span> · <span style="color:#2ecc71">Low</span> — how urgent the fix is.</div>
+    </div>
+        <h2 style="color:#2ecc71">What is already configured <span class="cntr">13 OK</span></h2>
+        <table><thead><tr><th>ID</th><th>Scope</th><th>Configured correctly</th></tr></thead>
+        <tbody>
+        <tr><td class="fid">SECRET-PUSH-PROTECTION</td>
+        <td class="scope">repo:web-frontend</td>
+        <td><b>Push protection enabled</b> &mdash; Push protection enabled.</td></tr>
+        <tr><td class="fid">SECRET-SCANNING-ENABLED</td>
+        <td class="scope">repo:iac-sandbox</td>
+        <td><b>Secret scanning enabled</b> &mdash; Secret scanning enabled.</td></tr>
+        <tr><td class="fid">SECRET-SCANNING-ENABLED</td>
+        <td class="scope">repo:payments-service</td>
+        <td><b>Secret scanning enabled</b> &mdash; Secret scanning enabled.</td></tr>
+        <tr><td class="fid">SECRET-SCANNING-ENABLED</td>
+        <td class="scope">repo:web-frontend</td>
+        <td><b>Secret scanning enabled</b> &mdash; Secret scanning enabled.</td></tr>
+        <tr><td class="fid">CODE-SCANNING-ENABLED</td>
+        <td class="scope">repo:iac-sandbox</td>
+        <td><b>Code scanning (CodeQL) enabled</b> &mdash; Code scanning (CodeQL) enabled.</td></tr>
+        <tr><td class="fid">CODE-SCANNING-ENABLED</td>
+        <td class="scope">repo:payments-service</td>
+        <td><b>Code scanning (CodeQL) enabled</b> &mdash; Code scanning (CodeQL) enabled.</td></tr>
+        <tr><td class="fid">CODE-SCANNING-ENABLED</td>
+        <td class="scope">repo:web-frontend</td>
+        <td><b>Code scanning (CodeQL) enabled</b> &mdash; Code scanning (CodeQL) enabled.</td></tr>
+        <tr><td class="fid">DEP-ALERTS-ENABLED</td>
+        <td class="scope">repo:payments-service</td>
+        <td><b>Dependabot alerts enabled</b> &mdash; Dependabot vulnerability alerts enabled.</td></tr>
+        <tr><td class="fid">DEP-GRAPH-ENABLED</td>
+        <td class="scope">repo:iac-sandbox</td>
+        <td><b>Dependency graph enabled</b> &mdash; Dependency graph enabled.</td></tr>
+        <tr><td class="fid">DEP-GRAPH-ENABLED</td>
+        <td class="scope">repo:payments-service</td>
+        <td><b>Dependency graph enabled</b> &mdash; Dependency graph enabled.</td></tr>
+        <tr><td class="fid">DEP-GRAPH-ENABLED</td>
+        <td class="scope">repo:web-frontend</td>
+        <td><b>Dependency graph enabled</b> &mdash; Dependency graph enabled.</td></tr>
+        <tr><td class="fid">ENF-PR-REQUIRED</td>
+        <td class="scope">repo:iac-sandbox</td>
+        <td><b>Default branch requires pull requests</b> &mdash; Default branch requires PR and a code-scanning status check.</td></tr>
+        <tr><td class="fid">GOV-DISMISSAL-WORKFLOW</td>
+        <td class="scope">repo:web-frontend</td>
+        <td><b>Dismissal-review workflow in use</b> &mdash; Dismissal-review workflow in use (3 request(s) on record).</td></tr></tbody></table>
+        <h2>Secret Protection <span class="cntr">4 gap(s)</span></h2>
+        <table><thead><tr><th>ID</th><th>Status</th><th>Sev</th><th>Scope</th>
+        <th>What is configured, what should be, why, and the evidence</th></tr></thead>
+        <tbody>
+            <tr>
+              <td class="fid">SECRET-PUSH-BYPASS</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#C0392B;font-weight:600">High</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">Push protection not bypassed</div>
+                <div class="now"><b>Now:</b> 2 push-protection bypass(es) recorded - each pushed a detected secret past the block.</div>
+                <div class="bp"><b>Best practice:</b> No secrets pushed via a push-protection bypass; any bypass reviewed.</div>
+                <div class="why"><b>Why it matters:</b> A push-protection bypass means a developer deliberately pushed a detected secret past the block. Each one is a potential live credential in git history that must be reviewed and rotated.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>bypasses = 2</code></div><div class="imp"><b>What to do:</b> Review every bypass; rotate any exposed secret; require justification for bypasses.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">SECRET-PUSH-PROTECTION</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#C0392B;font-weight:600">High</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">Push protection enabled</div>
+                <div class="now"><b>Now:</b> Secret scanning enabled but PUSH PROTECTION DISABLED - secrets detected after commit.</div>
+                <div class="bp"><b>Best practice:</b> Push protection ON, so secrets are blocked before they enter git history.</div>
+                <div class="why"><b>Why it matters:</b> Without push protection, a leaked credential is only detected AFTER it is committed - by then it must be treated as compromised and rotated. Blocking at push time prevents the exposure entirely.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>push_protection = disabled</code></div><div class="imp"><b>What to do:</b> Enable push protection (ideally enforced via the org security configuration so it cannot be turned off per repo).</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">SECRET-AI-DETECTION</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#BF8F00;font-weight:600">Medium</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">AI-detected secrets enabled</div>
+                <div class="now"><b>Now:</b> AI-detected secrets not enabled - non-conforming credentials may escape detection.</div>
+                <div class="bp"><b>Best practice:</b> AI/non-provider secret detection ON, in addition to pattern matching.</div>
+                <div class="why"><b>Why it matters:</b> Regex patterns only catch credentials with a known shape. Hardcoded passwords, connection strings and home-grown tokens have no fixed format and slip through - AI detection covers that residual class.</div>
+                <div class="imp"><b>What to do:</b> Enable AI-detected secrets; measure detection quality on a pilot repo first.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">SECRET-CUSTOM-PATTERNS</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#BF8F00;font-weight:600">Medium</td>
+              <td class="scope">org</td>
+              <td>
+                <div class="tt">Custom secret patterns defined</div>
+                <div class="now"><b>Now:</b> No organisation custom secret-scanning patterns defined.</div>
+                <div class="bp"><b>Best practice:</b> Custom patterns defined for organisation-specific credential formats.</div>
+                <div class="why"><b>Why it matters:</b> Built-in patterns cover public cloud/SaaS tokens. Internal API keys and service credentials unique to your organisation are invisible to them and leak silently.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>custom_patterns = 0</code></div><div class="imp"><b>What to do:</b> Define custom patterns (dry-run first, then enforce) for your internal formats.</div>
+              </td>
+            </tr></tbody></table>
+        <h2>Code Scanning <span class="cntr">2 gap(s)</span></h2>
+        <table><thead><tr><th>ID</th><th>Status</th><th>Sev</th><th>Scope</th>
+        <th>What is configured, what should be, why, and the evidence</th></tr></thead>
+        <tbody>
+            <tr>
+              <td class="fid">CODE-REQUIRED-CHECK</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#C0392B;font-weight:600">High</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">Code scanning required to merge</div>
+                <div class="now"><b>Now:</b> PR required, but no ruleset requires the code-scanning check - criticals don&#x27;t block merge.</div>
+                <div class="bp"><b>Best practice:</b> A ruleset requires the code-scanning check to pass at a set severity threshold.</div>
+                <div class="why"><b>Why it matters:</b> Scanning without enforcement is advisory only. If findings don&#x27;t gate the pull request, code with known criticals merges and is discovered later in the backlog.</div>
+                <div class="imp"><b>What to do:</b> Create a ruleset requiring the code-scanning check on protected branches.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">CODE-EXTENDED-SUITE</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#BF8F00;font-weight:600">Medium</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">CodeQL extended query suite</div>
+                <div class="now"><b>Now:</b> CodeQL &#x27;default&#x27; suite in use - extended suite not enabled.</div>
+                <div class="bp"><b>Best practice:</b> security-extended query suite enabled where a triage capability exists.</div>
+                <div class="why"><b>Why it matters:</b> The default suite favours precision and omits lower-severity/lower-precision queries. Real vulnerabilities in those classes are never surfaced, understating true risk.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>query_suite = default</code></div><div class="imp"><b>What to do:</b> Enable the security-extended suite; measure the findings delta before rollout.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">CODE-SCHEDULED-SCANS</td>
+              <td><span class="badge" style="background:#7d5ba6">MANUAL</span></td>
+              <td style="color:#5E7A90;font-weight:600">Info</td>
+              <td class="scope">org</td>
+              <td>
+                <div class="tt">Scheduled scans for inactive repos</div>
+                <div class="now"><b>Now:</b> Not exposed via API; verify in org code-security global settings.</div>
+                <div class="bp"><b>Best practice:</b> 30-day scheduled scans kept running for inactive repositories.</div>
+                <div class="why"><b>Why it matters:</b> Dormant code stops being scanned after 6 months of inactivity, so newly disclosed vulnerability classes are never applied to it - the code is unchanged but the threat landscape is not.</div>
+                
+              </td>
+            </tr></tbody></table>
+        <h2>Dependencies <span class="cntr">1 gap(s)</span></h2>
+        <table><thead><tr><th>ID</th><th>Status</th><th>Sev</th><th>Scope</th>
+        <th>What is configured, what should be, why, and the evidence</th></tr></thead>
+        <tbody>
+            <tr>
+              <td class="fid">DEP-UPDATE-CONFIG</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#BF8F00;font-weight:600">Medium</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">Dependabot update management</div>
+                <div class="now"><b>Now:</b> No dependabot.yml - grouping and schedule unmanaged.</div>
+                <div class="bp"><b>Best practice:</b> A dependabot.yml with grouped updates, a schedule and PR limits.</div>
+                <div class="why"><b>Why it matters:</b> Without grouping, every vulnerable package raises its own PR; developers facing a wall of PRs ignore them all, so fixes stall and alerts age.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>dependabot_yml = False</code></div><div class="imp"><b>What to do:</b> Add a dependabot.yml defining ecosystems, schedule, grouping and PR limits.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">DEP-ACCESS-SCOPE</td>
+              <td><span class="badge" style="background:#7d5ba6">MANUAL</span></td>
+              <td style="color:#5E7A90;font-weight:600">Info</td>
+              <td class="scope">org</td>
+              <td>
+                <div class="tt">Dependabot repository access scope</div>
+                <div class="now"><b>Now:</b> Access scope not exposed via API; verify manually in global settings.</div>
+                <div class="bp"><b>Best practice:</b> Dependabot access includes all repositories that need dependency updates.</div>
+                <div class="why"><b>Why it matters:</b> If access is limited to public/internal only, private repositories silently sit outside dependency update flows - no error, just absent alerts.</div>
+                
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">DEP-AUTO-SUBMISSION</td>
+              <td><span class="badge" style="background:#7d5ba6">MANUAL</span></td>
+              <td style="color:#5E7A90;font-weight:600">Info</td>
+              <td class="scope">repo:iac-sandbox</td>
+              <td>
+                <div class="tt">Automatic dependency submission</div>
+                <div class="now"><b>Now:</b> Not exposed via API; verify for compiled ecosystems (e.g. NuGet).</div>
+                <div class="bp"><b>Best practice:</b> Automatic dependency submission on for compiled ecosystems.</div>
+                <div class="why"><b>Why it matters:</b> For compiled languages, build-time and transitive dependencies aren&#x27;t visible from manifests alone. If the graph can&#x27;t see a dependency, Dependabot can&#x27;t alert on it.</div>
+                
+              </td>
+            </tr></tbody></table>
+        <h2>Enforcement <span class="cntr">2 gap(s)</span></h2>
+        <table><thead><tr><th>ID</th><th>Status</th><th>Sev</th><th>Scope</th>
+        <th>What is configured, what should be, why, and the evidence</th></tr></thead>
+        <tbody>
+            <tr>
+              <td class="fid">ENF-PR-REQUIRED</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#C0392B;font-weight:600">High</td>
+              <td class="scope">repo:web-frontend</td>
+              <td>
+                <div class="tt">Default branch requires pull requests</div>
+                <div class="now"><b>Now:</b> Default branch does not require pull requests / enforced checks.</div>
+                <div class="bp"><b>Best practice:</b> Protected default branch: PRs required, no direct pushes.</div>
+                <div class="why"><b>Why it matters:</b> Direct pushes to the default branch bypass review and all PR-gated security checks - unreviewed, unscanned code reaches production.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>pr_required = False</code></div><div class="imp"><b>What to do:</b> Require pull requests (and block direct pushes) via a ruleset or branch protection.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">ENF-REVIEWS-REQUIRED</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#BF8F00;font-weight:600">Medium</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">Pull request reviews required</div>
+                <div class="now"><b>Now:</b> Pull requests required, but no approving review is mandated.</div>
+                <div class="bp"><b>Best practice:</b> At least one required approving review before merge.</div>
+                <div class="why"><b>Why it matters:</b> Peer review is a primary control against both mistakes and malicious changes; without it a single actor can merge anything.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>reviews_required = False</code></div><div class="imp"><b>What to do:</b> Require &gt;=1 approving review in the branch ruleset/protection.</div>
+              </td>
+            </tr></tbody></table>
+        <h2>Governance <span class="cntr">3 gap(s)</span></h2>
+        <table><thead><tr><th>ID</th><th>Status</th><th>Sev</th><th>Scope</th>
+        <th>What is configured, what should be, why, and the evidence</th></tr></thead>
+        <tbody>
+            <tr>
+              <td class="fid">GOV-NO-OPEN-CRITICALS</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#C0392B;font-weight:600">High</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">No unresolved critical/high alerts</div>
+                <div class="now"><b>Now:</b> 5 critical and 0 high open alerts (code scanning 5, dependabot 1, secrets 0).</div>
+                <div class="bp"><b>Best practice:</b> No open critical/high alerts left undispositioned.</div>
+                <div class="why"><b>Why it matters:</b> Open criticals are the alerts most likely to be actively exploited; leaving them unowned is the single clearest measure of unmanaged risk.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>critical = 5</code></div><div class="imp"><b>What to do:</b> Remediate or formally risk-accept every critical/high, starting with the most concentrated repositories.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">GOV-BACKLOG-FRESH</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#BF8F00;font-weight:600">Medium</td>
+              <td class="scope">repo:web-frontend</td>
+              <td>
+                <div class="tt">Alert backlog not stale</div>
+                <div class="now"><b>Now:</b> Stale backlog: average open-alert age 26d, oldest 140d (&gt;90d without SLA).</div>
+                <div class="bp"><b>Best practice:</b> Alerts closed within severity-based SLAs; backlog does not age.</div>
+                <div class="why"><b>Why it matters:</b> A rising average alert age means the easy fixes are done and a stale residue is accumulating and normalising - &#x27;those alerts have always been there&#x27;.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>avg_age_days = 26; oldest_age_days = 140</code></div><div class="imp"><b>What to do:</b> Set severity-based SLAs and assign alert ownership.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">GOV-STORED-SECRETS</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#2E7D32;font-weight:600">Low</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">Actions/agent secrets reviewed</div>
+                <div class="now"><b>Now:</b> 6 Actions secret(s) stored, oldest 430d - review/rotate stale secrets.</div>
+                <div class="bp"><b>Best practice:</b> Stored Actions/agent secrets are known, owned, and rotated; no stale ones.</div>
+                <div class="why"><b>Why it matters:</b> Long-lived CI/CD secrets are a standing credential-theft target. The tool cannot read their values, but flags their presence and age so stale or forgotten secrets get reviewed and rotated.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>secret_count = 6; oldest_age_days = 430; names = AZURE_TOKEN, NPM_KEY, DB_PW</code></div><div class="imp"><b>What to do:</b> Review each stored secret; remove unused ones; rotate anything old.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">GOV-DISMISSAL-CONTROL</td>
+              <td><span class="badge" style="background:#7d5ba6">MANUAL</span></td>
+              <td style="color:#5E7A90;font-weight:600">Info</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">Direct alert dismissals prevented</div>
+                <div class="now"><b>Now:</b> Not exposed via API; verify per scanner in repo Advanced Security settings.</div>
+                <div class="bp"><b>Best practice:</b> &#x27;Prevent direct alert dismissals&#x27; on for all three scanners.</div>
+                <div class="why"><b>Why it matters:</b> If anyone can self-dismiss an alert with no review, dismissals become invisible and every closure metric becomes untrustworthy - reductions may be dismissals, not fixes.</div>
+                
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">GOV-NO-OPEN-CRITICALS</td>
+              <td><span class="badge" style="background:#456">INFO</span></td>
+              <td style="color:#5E7A90;font-weight:600">Info</td>
+              <td class="scope">repo:web-frontend</td>
+              <td>
+                <div class="tt">No unresolved critical/high alerts</div>
+                <div class="now"><b>Now:</b> 26 open alerts, none critical (9 High, 8 Medium, 9 Low).</div>
+                <div class="bp"><b>Best practice:</b> No open critical/high alerts left undispositioned.</div>
+                <div class="why"><b>Why it matters:</b> Open criticals are the alerts most likely to be actively exploited; leaving them unowned is the single clearest measure of unmanaged risk.</div>
+                
+              </td>
+            </tr></tbody></table>
+        <h2>Organisation <span class="cntr">3 gap(s)</span></h2>
+        <table><thead><tr><th>ID</th><th>Status</th><th>Sev</th><th>Scope</th>
+        <th>What is configured, what should be, why, and the evidence</th></tr></thead>
+        <tbody>
+            <tr>
+              <td class="fid">ORG-2FA-REQUIRED</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#C0392B;font-weight:600">High</td>
+              <td class="scope">org</td>
+              <td>
+                <div class="tt">Two-factor authentication required</div>
+                <div class="now"><b>Now:</b> Two-factor authentication is NOT required for organisation members.</div>
+                <div class="bp"><b>Best practice:</b> 2FA required for all organisation members.</div>
+                <div class="why"><b>Why it matters:</b> Account takeover via phished or reused passwords is a leading breach vector; org-wide 2FA is the highest-leverage single control against it.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>two_factor_required = False</code></div><div class="imp"><b>What to do:</b> Require two-factor authentication in organisation security settings.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">ORG-CONFIG-COVERAGE</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#C0392B;font-weight:600">High</td>
+              <td class="scope">org</td>
+              <td>
+                <div class="tt">Security configuration coverage</div>
+                <div class="now"><b>Now:</b> 2 of 9 repositories are not attached to any security configuration.</div>
+                <div class="bp"><b>Best practice:</b> Every active repository attached to a security configuration; default for new.</div>
+                <div class="why"><b>Why it matters:</b> A &#x27;100% protected&#x27; dashboard is meaningless if some repositories aren&#x27;t attached at all - unattached repos are unscanned code with zero visibility.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>total_repos = 9; attached = 7; missing = legacy-api, infra-scripts</code></div><div class="imp"><b>What to do:</b> Attach the org security configuration to every active repo; set as default.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">ORG-SECURITY-POLICY</td>
+              <td><span class="badge" style="background:#c0392b">GAP</span></td>
+              <td style="color:#2E7D32;font-weight:600">Low</td>
+              <td class="scope">repo:payments-service</td>
+              <td>
+                <div class="tt">Security policy published</div>
+                <div class="now"><b>Now:</b> No SECURITY.md - external researchers have no defined way to report vulnerabilities.</div>
+                <div class="bp"><b>Best practice:</b> A SECURITY.md tells researchers how to report vulnerabilities.</div>
+                <div class="why"><b>Why it matters:</b> Without a disclosure policy, external finders have no safe channel and may disclose publicly or not at all - a missed chance to fix issues before they&#x27;re weaponised.</div>
+                <div class="ev"><b>Why flagged (evidence):</b> <code>security_policy = None</code></div><div class="imp"><b>What to do:</b> Add a SECURITY.md with a private reporting route.</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="fid">ORG-CODE-QUALITY</td>
+              <td><span class="badge" style="background:#7d5ba6">MANUAL</span></td>
+              <td style="color:#5E7A90;font-weight:600">Info</td>
+              <td class="scope">org</td>
+              <td>
+                <div class="tt">Code Quality enabled</div>
+                <div class="now"><b>Now:</b> Not exposed via API; verify manually (Preview feature).</div>
+                <div class="bp"><b>Best practice:</b> Code Quality (Preview) trialled to add maintainability signal.</div>
+                <div class="why"><b>Why it matters:</b> Not a security control, but low-cost quality signal in the same PR workflow; an opportunity rather than a defect.</div>
+                
+              </td>
+            </tr></tbody></table>
+    <h2>Checks performed <span class="cntr">25 distinct checks &middot; 34 evaluations</span></h2>
+    <div class="sub">Each repository and the organisation are evaluated against the catalogue below.
+    34 total evaluations this run &mdash; GAP: 15 &middot; INFO: 1 &middot; OK: 13 &middot; MANUAL: 5.
+    <b>How determined:</b> AUTO = read from the API &middot; PARTIAL = API signal, confirm nuance &middot; MANUAL = not exposed by the API.</div>
+    <table><thead><tr><th>ID</th><th>Check</th><th>Scope</th><th>How</th><th>Results this run</th></tr></thead>
+    <tbody><tr><td colspan="5" class="catrow">Secret Protection</td></tr><tr>
+              <td class="fid">SECRET-AI-DETECTION</td>
+              <td>AI-detected secrets enabled</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr><tr>
+              <td class="fid">SECRET-CUSTOM-PATTERNS</td>
+              <td>Custom secret patterns defined</td>
+              <td class="scope">org</td>
+              <td>PARTIAL</td>
+              <td>GAP 1</td></tr><tr>
+              <td class="fid">SECRET-PUSH-BYPASS</td>
+              <td>Push protection not bypassed</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr><tr>
+              <td class="fid">SECRET-PUSH-PROTECTION</td>
+              <td>Push protection enabled</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>OK 1, GAP 1</td></tr><tr>
+              <td class="fid">SECRET-SCANNING-ENABLED</td>
+              <td>Secret scanning enabled</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>OK 3</td></tr><tr><td colspan="5" class="catrow">Code Scanning</td></tr><tr>
+              <td class="fid">CODE-EXTENDED-SUITE</td>
+              <td>CodeQL extended query suite</td>
+              <td class="scope">repo</td>
+              <td>PARTIAL</td>
+              <td>GAP 1</td></tr><tr>
+              <td class="fid">CODE-REQUIRED-CHECK</td>
+              <td>Code scanning required to merge</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr><tr>
+              <td class="fid">CODE-SCANNING-ENABLED</td>
+              <td>Code scanning (CodeQL) enabled</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>OK 3</td></tr><tr>
+              <td class="fid">CODE-SCHEDULED-SCANS</td>
+              <td>Scheduled scans for inactive repos</td>
+              <td class="scope">org</td>
+              <td>MANUAL</td>
+              <td>UNKNOWN 1</td></tr><tr><td colspan="5" class="catrow">Dependencies</td></tr><tr>
+              <td class="fid">DEP-ACCESS-SCOPE</td>
+              <td>Dependabot repository access scope</td>
+              <td class="scope">org</td>
+              <td>MANUAL</td>
+              <td>UNKNOWN 1</td></tr><tr>
+              <td class="fid">DEP-ALERTS-ENABLED</td>
+              <td>Dependabot alerts enabled</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>OK 1</td></tr><tr>
+              <td class="fid">DEP-AUTO-SUBMISSION</td>
+              <td>Automatic dependency submission</td>
+              <td class="scope">repo</td>
+              <td>MANUAL</td>
+              <td>UNKNOWN 1</td></tr><tr>
+              <td class="fid">DEP-GRAPH-ENABLED</td>
+              <td>Dependency graph enabled</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>OK 3</td></tr><tr>
+              <td class="fid">DEP-UPDATE-CONFIG</td>
+              <td>Dependabot update management</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr><tr><td colspan="5" class="catrow">Enforcement</td></tr><tr>
+              <td class="fid">ENF-PR-REQUIRED</td>
+              <td>Default branch requires pull requests</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>OK 1, GAP 1</td></tr><tr>
+              <td class="fid">ENF-REVIEWS-REQUIRED</td>
+              <td>Pull request reviews required</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr><tr><td colspan="5" class="catrow">Governance</td></tr><tr>
+              <td class="fid">GOV-BACKLOG-FRESH</td>
+              <td>Alert backlog not stale</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr><tr>
+              <td class="fid">GOV-DISMISSAL-CONTROL</td>
+              <td>Direct alert dismissals prevented</td>
+              <td class="scope">repo</td>
+              <td>MANUAL</td>
+              <td>UNKNOWN 1</td></tr><tr>
+              <td class="fid">GOV-DISMISSAL-WORKFLOW</td>
+              <td>Dismissal-review workflow in use</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>OK 1</td></tr><tr>
+              <td class="fid">GOV-NO-OPEN-CRITICALS</td>
+              <td>No unresolved critical/high alerts</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1, INFO 1</td></tr><tr>
+              <td class="fid">GOV-STORED-SECRETS</td>
+              <td>Actions/agent secrets reviewed</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr><tr><td colspan="5" class="catrow">Organisation</td></tr><tr>
+              <td class="fid">ORG-2FA-REQUIRED</td>
+              <td>Two-factor authentication required</td>
+              <td class="scope">org</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr><tr>
+              <td class="fid">ORG-CODE-QUALITY</td>
+              <td>Code Quality enabled</td>
+              <td class="scope">org</td>
+              <td>MANUAL</td>
+              <td>UNKNOWN 1</td></tr><tr>
+              <td class="fid">ORG-CONFIG-COVERAGE</td>
+              <td>Security configuration coverage</td>
+              <td class="scope">org</td>
+              <td>PARTIAL</td>
+              <td>GAP 1</td></tr><tr>
+              <td class="fid">ORG-SECURITY-POLICY</td>
+              <td>Security policy published</td>
+              <td class="scope">repo</td>
+              <td>AUTO</td>
+              <td>GAP 1</td></tr></tbody></table></div>
+<div class="foot">Generated 2026-07-22 20:58 UTC by ghas-assess &middot; read-only &middot; MANUAL = not exposed by the API, verify in the UI.</div>
+</div>
+<script>
+function showTab(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body></html>
