@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.env
+# generated reports (never commit real assessment output)
+*.json
+*.html
+*.docx
+!sample*.json
+!sample*.html
+!sample*.docx

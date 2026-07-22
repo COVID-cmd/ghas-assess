@@ -1,0 +1,67 @@
+name: GHAS Posture Assessment
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'   # Mondays 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  security-events: read
+
+jobs:
+  assess:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install
+        run: pip install python-docx
+
+      - name: Run assessment
+        env:
+          # Use an org-scoped token/secret with read-only GHAS permissions.
+          GITHUB_TOKEN: ${{ secrets.GHAS_ASSESS_TOKEN }}
+        run: |
+          python -m ghas_assess \
+            --org "${{ github.repository_owner }}" \
+            --formats json,html,docx \
+            --out ./ghas-assessment || true   # don't fail the upload step
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghas-assessment
+          path: |
+            ghas-assessment.json
+            ghas-assessment.html
+            ghas-assessment.docx
+
+      - name: Gate on High/Critical gaps
+        env:
+          GITHUB_TOKEN: ${{ secrets.GHAS_ASSESS_TOKEN }}
+        run: |
+          python -m ghas_assess --org "${{ github.repository_owner }}" --formats terminal
+
+  # Optional: publish the HTML dashboard to GitHub Pages (private repo = access-controlled).
+  # Uncomment to enable. Keep the repo PRIVATE - a GHAS gap report is sensitive.
+  #
+  # publish:
+  #   needs: assess
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     pages: write
+  #     id-token: write
+  #   environment:
+  #     name: github-pages
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #       with: { name: ghas-assessment }
+  #     - run: mkdir site && cp ghas-assessment.html site/index.html
+  #     - uses: actions/upload-pages-artifact@v3
+  #       with: { path: site }
+  #     - uses: actions/deploy-pages@v4
